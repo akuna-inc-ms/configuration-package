@@ -1,17 +1,40 @@
 services:
 
-  db:
-    image: postgres
+  db-postgres:
+    container_name: "db-postgres"
+    mem_limit: 512m
+    image: postgres:9.6.5-alpine
     restart: always
     environment:
       - POSTGRES_PASSWORD:
       - POSTGRES_USERNAME:
+    ports:
+      - "5432:5432"
+    volumes:
+    - ./postgres-initdb.sh:/docker-entrypoint-initdb.d/init.sh
 
   akuna-core:
+    container_name: "akuna-core"
+    mem_limit: 512m
     image: akuna-core
     restart: always
+    depends_on:
+      - db-postgres
     environment:
-      - POSTGRES_URI:
-      - API_GATEWAY_URL:
-      - AKUNA_CORE_URL:
+      - POSTGRES_URI: 'postgresql://db-postgres:27018/akuna'
+      - API_GATEWAY_URL: 'http://api-gateway:8080'
+      - SPRING_PROFILES_ACTIVE: 'dev'
+    ports:
+      - "8081:8080"
+      - "5081:5005"
 
+  api-gateway:
+    container-name: "api-gateway"
+    mem_limit: 512m
+    image: api-gateway
+    restart: always
+    environment:
+      AKUNA_CORE_URL: 'http://akuna-core:8080'
+    ports:
+      - "8082:8080"
+      - "5082:5005"
