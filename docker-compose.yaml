@@ -1,0 +1,17 @@
+services:
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD:
+      - POSTGRES_USERNAME:
+
+  akuna-core:
+    image: akuna-core
+    restart: always
+    environment:
+      - POSTGRES_URI:
+      - API_GATEWAY_URL:
+      - AKUNA_CORE_URL:
+
